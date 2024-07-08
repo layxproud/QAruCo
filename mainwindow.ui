@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>800</width>
+    <height>600</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>MainWindow</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <layout class="QVBoxLayout" name="verticalLayout_2">
+    <item>
+     <layout class="QVBoxLayout" name="cameraLayout"/>
+    </item>
+    <item>
+     <widget class="QListView" name="markersList">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Expanding" vsizetype="Minimum">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>800</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="fileMenu">
+    <property name="title">
+     <string>Файл</string>
+    </property>
+    <addaction name="cameraInfoAction"/>
+    <addaction name="openCameraAction"/>
+    <addaction name="exitAction"/>
+   </widget>
+   <widget class="QMenu" name="markersMenu">
+    <property name="title">
+     <string>Маркеры</string>
+    </property>
+    <addaction name="detectMarkersAction"/>
+    <addaction name="calculateDistanceAction"/>
+    <addaction name="findCenterAction"/>
+   </widget>
+   <widget class="QMenu" name="calibrationMenu">
+    <property name="title">
+     <string>Калибровка</string>
+    </property>
+    <addaction name="calibrateAction"/>
+   </widget>
+   <addaction name="fileMenu"/>
+   <addaction name="markersMenu"/>
+   <addaction name="calibrationMenu"/>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+  <action name="cameraInfoAction">
+   <property name="text">
+    <string>Список камер</string>
+   </property>
+  </action>
+  <action name="openCameraAction">
+   <property name="text">
+    <string>Старт</string>
+   </property>
+  </action>
+  <action name="exitAction">
+   <property name="text">
+    <string>Выход</string>
+   </property>
+  </action>
+  <action name="detectMarkersAction">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Поиск маркеров</string>
+   </property>
+  </action>
+  <action name="calculateDistanceAction">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Расстояния</string>
+   </property>
+  </action>
+  <action name="findCenterAction">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Центр</string>
+   </property>
+  </action>
+  <action name="calibrateAction">
+   <property name="text">
+    <string>Запуск калибровки</string>
+   </property>
+  </action>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
