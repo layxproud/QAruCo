@@ -1,0 +1,8 @@
+<RCC>
+    <qresource prefix="/icons">
+        <file>icons/center.png</file>
+        <file>icons/detector.png</file>
+        <file>icons/distance.png</file>
+        <file>icons/cancel.png</file>
+    </qresource>
+</RCC>

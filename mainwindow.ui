@@ -44,6 +44,7 @@
      <string>Файл</string>
     </property>
     <addaction name="cameraInfoAction"/>
+    <addaction name="markerParamsAction"/>
     <addaction name="openCameraAction"/>
     <addaction name="exitAction"/>
    </widget>
@@ -54,18 +55,27 @@
     <addaction name="detectMarkersAction"/>
     <addaction name="calculateDistanceAction"/>
     <addaction name="findCenterAction"/>
-   </widget>
-   <widget class="QMenu" name="calibrationMenu">
-    <property name="title">
-     <string>Калибровка</string>
-    </property>
-    <addaction name="calibrateAction"/>
+    <addaction name="cancelOperationsAction"/>
    </widget>
    <addaction name="fileMenu"/>
    <addaction name="markersMenu"/>
-   <addaction name="calibrationMenu"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
+  <widget class="QToolBar" name="toolBar">
+   <property name="windowTitle">
+    <string>toolBar</string>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+   <addaction name="detectMarkersAction"/>
+   <addaction name="calculateDistanceAction"/>
+   <addaction name="findCenterAction"/>
+   <addaction name="cancelOperationsAction"/>
+  </widget>
   <action name="cameraInfoAction">
    <property name="text">
     <string>Список камер</string>
@@ -82,35 +92,61 @@
    </property>
   </action>
   <action name="detectMarkersAction">
-   <property name="checkable">
-    <bool>true</bool>
+   <property name="icon">
+    <iconset resource="res.qrc">
+     <normaloff>:/icons/icons/detector.png</normaloff>:/icons/icons/detector.png</iconset>
    </property>
    <property name="text">
     <string>Поиск маркеров</string>
    </property>
   </action>
   <action name="calculateDistanceAction">
-   <property name="checkable">
-    <bool>true</bool>
+   <property name="icon">
+    <iconset resource="res.qrc">
+     <normaloff>:/icons/icons/distance.png</normaloff>:/icons/icons/distance.png</iconset>
    </property>
    <property name="text">
-    <string>Расстояния</string>
+    <string>Измерение расстояний</string>
+   </property>
+   <property name="toolTip">
+    <string>Поиск расстояний до маркеров</string>
    </property>
   </action>
   <action name="findCenterAction">
-   <property name="checkable">
-    <bool>true</bool>
+   <property name="icon">
+    <iconset resource="res.qrc">
+     <normaloff>:/icons/icons/center.png</normaloff>:/icons/icons/center.png</iconset>
    </property>
    <property name="text">
-    <string>Центр</string>
+    <string>Поиск центра</string>
+   </property>
+   <property name="toolTip">
+    <string>Поиск центра</string>
    </property>
   </action>
-  <action name="calibrateAction">
+  <action name="markerParamsAction">
    <property name="text">
-    <string>Запуск калибровки</string>
+    <string>Параметры маркеров</string>
+   </property>
+   <property name="toolTip">
+    <string>Настройка параметров маркеров</string>
+   </property>
+  </action>
+  <action name="cancelOperationsAction">
+   <property name="icon">
+    <iconset resource="res.qrc">
+     <normaloff>:/icons/icons/cancel.png</normaloff>:/icons/icons/cancel.png</iconset>
+   </property>
+   <property name="text">
+    <string>Отмена операций</string>
+   </property>
+   <property name="toolTip">
+    <string>Отменяет все текущие задачи</string>
    </property>
   </action>
  </widget>
- <resources/>
+ <resources>
+  <include location="res.qrc"/>
+ </resources>
  <connections/>
 </ui>

@@ -1,14 +1,12 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#include "capturethread.h"
+#include "workspace.h"
 #include <QCameraInfo>
-#include <QDebug>
 #include <QGraphicsScene>
 #include <QGraphicsView>
 #include <QLabel>
 #include <QMainWindow>
-#include <QMessageBox>
 #include <QStandardItemModel>
 
 QT_BEGIN_NAMESPACE
@@ -27,6 +25,7 @@ public:
 
 private:
     Ui::MainWindow *ui;
+    Workspace *workspace;
 
     // View area
     QGraphicsScene *scene;
@@ -44,19 +43,15 @@ private:
 
 private:
     void initUI();
-    void enableButtons(bool status);
 
 private slots:
     // Actions
     void showCameraInfo();
     void openCamera();
-    void updateDetectionStatus(bool status);
-    void updateDistanceStatus(bool status);
-    void updateCenterStatus(bool status);
-    void beginCalibration(bool status);
 
     // GUI
-    void updateFrame(cv::Mat *mat);
+    void updateFrame(const cv::Mat &frame);
     void updateMarkersList(const QVector<QPair<int, double>> &markers);
+    void updateCurrentTask(const QString &newTask);
 };
 #endif // MAINWINDOW_H

@@ -11,11 +11,15 @@ CONFIG += c++17
 SOURCES += \
     capturethread.cpp \
     main.cpp \
-    mainwindow.cpp
+    mainwindow.cpp \
+    workspace.cpp \
+    yamlhandler.cpp
 
 HEADERS += \
     capturethread.h \
-    mainwindow.h
+    mainwindow.h \
+    workspace.h \
+    yamlhandler.h
 
 FORMS += \
     mainwindow.ui
@@ -42,3 +46,6 @@ CONFIG(debug, debug|release) {
 qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
+
+RESOURCES += \
+    res.qrc

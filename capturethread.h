@@ -1,69 +1,80 @@
 #ifndef CAPTURETHREAD_H
 #define CAPTURETHREAD_H
 
+#include "yamlhandler.h"
 #include <opencv2/aruco.hpp>
 #include <opencv2/opencv.hpp>
 #include <QMutex>
-#include <QObject>
 #include <QThread>
-#include <QTime>
 
 class CaptureThread : public QThread
 {
     Q_OBJECT
 public:
-    CaptureThread(int camera, QMutex *lock);
-    ~CaptureThread();
+    CaptureThread(QObject *parent = nullptr);
 
-    void setRunning(bool run) { running = run; }
+    void setYamlHandler(YamlHandler *handler) { yamlHandler = handler; }
+    void setCalibrationParams(const CalibrationParams &params) { calibrationParams = params; }
+    void setMarkerSize(float newSize) { markerSize = newSize; }
     void setMarkerDetectingStatus(bool status) { markerDetectionStatus = status; }
     void setDistanceCalculatingStatus(bool status) { distanceCalculatingStatus = status; }
     void setCenterFindingStatus(bool status) { centerFindingStatus = status; }
-    void setCalibrationStatus(bool status) { calibrationStatus = status; }
+
+    bool getMarkerDetectionStatus() { return markerDetectionStatus; }
+    bool getDistanceCalculatingStatus() { return distanceCalculatingStatus; }
+    bool getCenterFindingStatus() { return centerFindingStatus; }
+
+    void stop();
+
+signals:
+    void frameReady(const cv::Mat &frame);
+    void distanceCalculated(const QVector<QPair<int, double>> &markers);
 
 protected:
     void run() override;
 
-signals:
-    void frameCaptured(cv::Mat *data);
-    void markersDetected(const QVector<QPair<int, double>> &markers);
-
 private:
     bool running;
-    int cameraID;
-    QMutex *dataLock;
-    cv::Mat frame;
-
-    // Marker detection
+    cv::Mat currentFrame;
+    cv::VideoCapture cap;
+    QMutex mutex;
     bool markerDetectionStatus;
     bool distanceCalculatingStatus;
     bool centerFindingStatus;
-    bool calibrationStatus;
+    float markerSize;
+    YamlHandler *yamlHandler;
+
+    CalibrationParams calibrationParams;
     cv::aruco::Dictionary AruCoDict;
     cv::aruco::DetectorParameters detectorParams;
     cv::aruco::ArucoDetector detector;
 
-    // Calibration
-    cv::Mat cameraMatrix;
-    cv::Mat distCoeffs;
+    cv::Mat objPoints;
+    std::vector<int> markerIds;
+    std::vector<cv::Vec3d> rvecs;
+    std::vector<cv::Vec3d> tvecs;
+    std::vector<std::pair<cv::Point2f, cv::Point3f>> markerPoints;
+
+    // Поиск центра
+    Configuration currentConfiguration;
+    std::map<std::string, Configuration> configurations;
+    cv::Point3f centerPoint;
 
 private:
-    bool loadCalibrationParameters(const std::string &filename);
-
+    // Поиск маркеров
     void detectMarkers(
         cv::Mat &frame,
         std::vector<int> &markerIds,
         std::vector<std::vector<cv::Point2f>> &markerCorners);
-    void drawDetectedMarkers(
-        cv::Mat &frame,
-        const std::vector<std::vector<cv::Point2f>> &markerCorners,
-        const std::vector<int> &markerIds);
-    void calculateDistance(const std::vector<std::vector<cv::Point2f>> &markerCorners,
-        const std::vector<int> &markerIds);
-    void findCenter(
-        cv::Mat &frame,
-        const std::vector<std::vector<cv::Point2f>> &markerCorners,
-        const std::vector<int> &markerIds);
+
+    // Измерение расстояний
+    void calculateDistance();
+
+    // Поиск центра
+    void updateConfigurationsMap();
+    void updateCenterPointPosition();
+    void detectCurrentConfiguration();
+    cv::Point3f calculateMedianPoint(const std::vector<cv::Point3f> &points);
 };
 
 #endif // CAPTURETHREAD_H
