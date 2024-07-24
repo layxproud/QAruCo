@@ -22,11 +22,13 @@ signals:
     void taskChanged(const QString &newTask);
     void taskFinished(bool success, const QString &message);
     void distanceCalculated(const QVector<QPair<int, double>> &markers);
+    void centerFound(double distance);
 
 public slots:
     void startMarkerDetectionTask();
     void startDistanceCalculationTask();
     void startCenterFindingTask();
+    void cancelOperations();
 
 private:
     YamlHandler *yamlHandler;

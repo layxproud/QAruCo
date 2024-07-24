@@ -14,6 +14,11 @@
    <string>MainWindow</string>
   </property>
   <widget class="QWidget" name="centralwidget">
+   <property name="font">
+    <font>
+     <pointsize>12</pointsize>
+    </font>
+   </property>
    <layout class="QVBoxLayout" name="verticalLayout_2">
     <item>
      <layout class="QVBoxLayout" name="cameraLayout"/>
@@ -71,17 +76,28 @@
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
+   <addaction name="cameraInfoAction"/>
+   <addaction name="openCameraAction"/>
+   <addaction name="separator"/>
    <addaction name="detectMarkersAction"/>
    <addaction name="calculateDistanceAction"/>
    <addaction name="findCenterAction"/>
    <addaction name="cancelOperationsAction"/>
   </widget>
   <action name="cameraInfoAction">
+   <property name="icon">
+    <iconset resource="res.qrc">
+     <normaloff>:/icons/icons/info.png</normaloff>:/icons/icons/info.png</iconset>
+   </property>
    <property name="text">
     <string>Список камер</string>
    </property>
   </action>
   <action name="openCameraAction">
+   <property name="icon">
+    <iconset resource="res.qrc">
+     <normaloff>:/icons/icons/start.png</normaloff>:/icons/icons/start.png</iconset>
+   </property>
    <property name="text">
     <string>Старт</string>
    </property>

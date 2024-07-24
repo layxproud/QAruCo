@@ -4,5 +4,7 @@
         <file>icons/detector.png</file>
         <file>icons/distance.png</file>
         <file>icons/cancel.png</file>
+        <file>icons/info.png</file>
+        <file>icons/start.png</file>
     </qresource>
 </RCC>

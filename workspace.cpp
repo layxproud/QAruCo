@@ -8,6 +8,7 @@ Workspace::Workspace(QObject *parent)
 {
     connect(captureThread, &CaptureThread::frameReady, this, &Workspace::frameReady);
     connect(captureThread, &CaptureThread::distanceCalculated, this, &Workspace::distanceCalculated);
+    connect(captureThread, &CaptureThread::centerFound, this, &Workspace::centerFound);
 }
 
 Workspace::~Workspace()
@@ -78,4 +79,12 @@ void Workspace::startCenterFindingTask()
         captureThread->setCenterFindingStatus(true);
         emit taskChanged(tr("Ведется поиск центра"));
     }
+}
+
+void Workspace::cancelOperations()
+{
+    captureThread->setDistanceCalculatingStatus(false);
+    captureThread->setCenterFindingStatus(false);
+    captureThread->setMarkerDetectingStatus(false);
+    emit taskChanged(tr("Нет задачи"));
 }

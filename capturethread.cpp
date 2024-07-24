@@ -49,97 +49,101 @@ void CaptureThread::run()
             QMutexLocker locker(&mutex);
             currentFrame = frame.clone();
 
+            markerCorners.clear();
+            rejectedCorners.clear();
             markerIds.clear();
-            markerPoints.clear();
             rvecs.clear();
             tvecs.clear();
 
-            std::vector<std::vector<cv::Point2f>> markerCorners, rejectedCorners;
             detector.detectMarkers(frame, markerCorners, markerIds, rejectedCorners);
 
             if (markerIds.size() > 0) {
                 if (markerDetectionStatus) {
                     cv::aruco::drawDetectedMarkers(currentFrame, markerCorners, markerIds);
+                } else if (distanceCalculatingStatus) {
+                    calculateDistance();
                 } else if (centerFindingStatus) {
-                    int nMarkers = markerCorners.size();
-                    rvecs.resize(nMarkers);
-                    tvecs.resize(nMarkers);
-
-                    for (size_t i = 0; i < nMarkers; i++) {
-                        solvePnP(
-                            objPoints,
-                            markerCorners.at(i),
-                            calibrationParams.cameraMatrix,
-                            calibrationParams.distCoeffs,
-                            rvecs.at(i),
-                            tvecs.at(i));
-
-                        cv::Point2f markerCenter = (markerCorners.at(i)[0] + markerCorners.at(i)[1]
-                                                    + markerCorners.at(i)[2]
-                                                    + markerCorners.at(i)[3])
-                                                   * 0.25;
-                        markerPoints.emplace_back(
-                            markerCenter, cv::Point3f(tvecs[i][0], tvecs[i][1], tvecs[i][2]));
-                    }
-
-                    updateCenterPointPosition();
-
-                    if (centerPoint != cv::Point3f(0.0, 0.0, 0.0)
-                        && !currentConfiguration.name.empty()) {
-                        std::vector<cv::Point3f> points3D = {centerPoint};
-                        std::vector<cv::Point2f> points2D;
-                        cv::projectPoints(
-                            points3D,
-                            cv::Vec3d::zeros(),
-                            cv::Vec3d::zeros(),
-                            calibrationParams.cameraMatrix,
-                            calibrationParams.distCoeffs,
-                            points2D);
-
-                        cv::circle(currentFrame, points2D[0], 5, cv::Scalar(0, 0, 255), -1);
-                    }
+                    findAndDrawCenter();
                 }
             } else {
-                // Убирает данные о прошлой конфигурации, если не обнаружено маркеров
                 detectCurrentConfiguration();
             }
             emit frameReady(currentFrame);
         }
         msleep(30);
     }
-
     cap.release();
 }
 
 void CaptureThread::calculateDistance()
 {
-    //    if (markerIds.empty())
-    //        return;
+    if (markerIds.empty())
+        return;
 
-    //    QVector<QPair<int, double>> markers;
+    int nMarkers = markerCorners.size();
+    QVector<QPair<int, double>> markers;
 
-    //    for (int i = 0; i < markerIds.size(); i++) {
-    //        cv::solvePnP(
-    //            objPoints,
-    //            markerCorners.at(i),
-    //            calibrationParams.cameraMatrix,
-    //            calibrationParams.distCoeffs,
-    //            rvecs.at(i),
-    //            tvecs.at(i));
+    rvecs.clear();
+    tvecs.clear();
+    rvecs.resize(nMarkers);
+    tvecs.resize(nMarkers);
 
-    //        double distance = std::sqrt(
-    //            tvecs.at(i)[0] * tvecs.at(i)[0] + tvecs.at(i)[1] * tvecs.at(i)[1]
-    //            + tvecs.at(i)[2] * tvecs.at(i)[2]);
+    cv::aruco::estimatePoseSingleMarkers(
+        markerCorners,
+        markerSize,
+        calibrationParams.cameraMatrix,
+        calibrationParams.distCoeffs,
+        rvecs,
+        tvecs);
 
-    //        markers.append(qMakePair(markerIds.at(i), distance));
-    //    }
+    for (size_t i = 0; i < markerIds.size(); ++i) {
+        double distance = cv::norm(tvecs[i]);
+        markers.append(qMakePair(markerIds.at(i), distance));
+    }
 
-    //    std::sort(
-    //        markers.begin(),
-    //        markers.end(),
-    //        [](const QPair<int, double> &a, const QPair<int, double> &b) { return a.first < b.first; });
+    std::sort(
+        markers.begin(),
+        markers.end(),
+        [](const QPair<int, double> &a, const QPair<int, double> &b) { return a.first < b.first; });
 
-    //    emit distanceCalculated(markers);
+    emit distanceCalculated(markers);
+}
+
+void CaptureThread::findAndDrawCenter()
+{
+    int nMarkers = markerCorners.size();
+    rvecs.clear();
+    tvecs.clear();
+    rvecs.resize(nMarkers);
+    tvecs.resize(nMarkers);
+
+    for (size_t i = 0; i < nMarkers; i++) {
+        solvePnP(
+            objPoints,
+            markerCorners.at(i),
+            calibrationParams.cameraMatrix,
+            calibrationParams.distCoeffs,
+            rvecs.at(i),
+            tvecs.at(i));
+    }
+
+    updateCenterPointPosition();
+
+    if (centerPoint != cv::Point3f(0.0, 0.0, 0.0) && !currentConfiguration.name.empty()) {
+        std::vector<cv::Point3f> points3D = {centerPoint};
+        std::vector<cv::Point2f> points2D;
+        cv::projectPoints(
+            points3D,
+            cv::Vec3d::zeros(),
+            cv::Vec3d::zeros(),
+            calibrationParams.cameraMatrix,
+            calibrationParams.distCoeffs,
+            points2D);
+
+        cv::circle(currentFrame, points2D[0], 5, cv::Scalar(0, 0, 255), -1);
+
+        emit centerFound(centerPoint.z);
+    }
 }
 
 void CaptureThread::updateConfigurationsMap()

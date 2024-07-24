@@ -29,6 +29,7 @@ public:
 signals:
     void frameReady(const cv::Mat &frame);
     void distanceCalculated(const QVector<QPair<int, double>> &markers);
+    void centerFound(double distance);
 
 protected:
     void run() override;
@@ -49,11 +50,12 @@ private:
     cv::aruco::DetectorParameters detectorParams;
     cv::aruco::ArucoDetector detector;
 
+    // Обнаружение маркеров
     cv::Mat objPoints;
     std::vector<int> markerIds;
     std::vector<cv::Vec3d> rvecs;
     std::vector<cv::Vec3d> tvecs;
-    std::vector<std::pair<cv::Point2f, cv::Point3f>> markerPoints;
+    std::vector<std::vector<cv::Point2f>> markerCorners, rejectedCorners;
 
     // Поиск центра
     Configuration currentConfiguration;
@@ -61,16 +63,11 @@ private:
     cv::Point3f centerPoint;
 
 private:
-    // Поиск маркеров
-    void detectMarkers(
-        cv::Mat &frame,
-        std::vector<int> &markerIds,
-        std::vector<std::vector<cv::Point2f>> &markerCorners);
-
     // Измерение расстояний
     void calculateDistance();
 
     // Поиск центра
+    void findAndDrawCenter();
     void updateConfigurationsMap();
     void updateCenterPointPosition();
     void detectCurrentConfiguration();

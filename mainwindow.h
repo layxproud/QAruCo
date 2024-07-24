@@ -51,7 +51,8 @@ private slots:
 
     // GUI
     void updateFrame(const cv::Mat &frame);
-    void updateMarkersList(const QVector<QPair<int, double>> &markers);
+    void updateDistancesList(const QVector<QPair<int, double>> &markers);
+    void updateCenterList(double distance);
     void updateCurrentTask(const QString &newTask);
 };
 #endif // MAINWINDOW_H

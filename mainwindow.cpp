@@ -34,6 +34,7 @@ void MainWindow::initUI()
     currentTaskLabel = new QLabel(ui->statusbar);
     ui->statusbar->addPermanentWidget(currentTaskLabel);
     mainStatusLabel->setText(tr("QAruCo готов к работе"));
+    currentTaskLabel->setText(tr("Нет задачи"));
 
     // Список меток
     ui->markersList->setModel(listModel);
@@ -53,11 +54,13 @@ void MainWindow::initUI()
         workspace,
         &Workspace::startDistanceCalculationTask);
     connect(ui->findCenterAction, &QAction::triggered, workspace, &Workspace::startCenterFindingTask);
+    connect(ui->cancelOperationsAction, &QAction::triggered, workspace, &Workspace::cancelOperations);
 
     // connections to GUI
     connect(workspace, &Workspace::frameReady, this, &MainWindow::updateFrame);
     connect(workspace, &Workspace::taskChanged, this, &MainWindow::updateCurrentTask);
-    connect(workspace, &Workspace::distanceCalculated, this, &MainWindow::updateMarkersList);
+    connect(workspace, &Workspace::distanceCalculated, this, &MainWindow::updateDistancesList);
+    connect(workspace, &Workspace::centerFound, this, &MainWindow::updateCenterList);
 }
 
 void MainWindow::showCameraInfo()
@@ -87,20 +90,30 @@ void MainWindow::updateFrame(const cv::Mat &frame)
     view->fitInView(item, Qt::KeepAspectRatio);
 }
 
-void MainWindow::updateMarkersList(const QVector<QPair<int, double>> &markers)
+void MainWindow::updateDistancesList(const QVector<QPair<int, double>> &markers)
 {
     listModel->clear();
 
     for (const auto &marker : markers) {
-        QString text
-            = QString("ID: %1, Расстояние: %2 mm").arg(marker.first).arg((int) marker.second * 1000);
+        QString text = QString("ID: %1, Расстояние: %2 mm")
+                           .arg(marker.first)
+                           .arg((float) marker.second * 100);
         QStandardItem *item = new QStandardItem(text);
         listModel->appendRow(item);
     }
 }
 
+void MainWindow::updateCenterList(double distance)
+{
+    listModel->clear();
+    QString text = QString("Расстояние до центра: %1 mm").arg(distance * 100.0);
+    QStandardItem *item = new QStandardItem(text);
+    listModel->appendRow(item);
+}
+
 void MainWindow::updateCurrentTask(const QString &newTask)
 {
+    listModel->clear();
     currentTaskLabel->clear();
     currentTaskLabel->setText(newTask);
 }
