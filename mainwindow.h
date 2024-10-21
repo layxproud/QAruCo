@@ -1,7 +1,7 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#include "workspace.h"
+#include "arucoapi.h"
 #include <QCameraInfo>
 #include <QGraphicsScene>
 #include <QGraphicsView>
@@ -25,7 +25,7 @@ public:
 
 private:
     Ui::MainWindow *ui;
-    Workspace *workspace;
+    AruCoAPI *workspace;
 
     // View area
     QGraphicsScene *scene;

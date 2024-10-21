@@ -7,7 +7,7 @@
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
-    , workspace(new Workspace(this))
+    , workspace(new AruCoAPI(this))
     , listModel(new QStandardItemModel(this))
 {
     ui->setupUi(this);
@@ -47,20 +47,20 @@ void MainWindow::initUI()
         ui->detectMarkersAction,
         &QAction::triggered,
         workspace,
-        &Workspace::startMarkerDetectionTask);
+        &AruCoAPI::startMarkerDetectionTask);
     connect(
         ui->calculateDistanceAction,
         &QAction::triggered,
         workspace,
-        &Workspace::startDistanceCalculationTask);
-    connect(ui->findCenterAction, &QAction::triggered, workspace, &Workspace::startCenterFindingTask);
-    connect(ui->cancelOperationsAction, &QAction::triggered, workspace, &Workspace::cancelOperations);
+        &AruCoAPI::startDistanceCalculationTask);
+    connect(ui->findCenterAction, &QAction::triggered, workspace, &AruCoAPI::startCenterFindingTask);
+    connect(ui->cancelOperationsAction, &QAction::triggered, workspace, &AruCoAPI::cancelOperations);
 
     // connections to GUI
-    connect(workspace, &Workspace::frameReady, this, &MainWindow::updateFrame);
-    connect(workspace, &Workspace::taskChanged, this, &MainWindow::updateCurrentTask);
-    connect(workspace, &Workspace::distanceCalculated, this, &MainWindow::updateDistancesList);
-    connect(workspace, &Workspace::centerFound, this, &MainWindow::updateCenterList);
+    connect(workspace, &AruCoAPI::frameReady, this, &MainWindow::updateFrame);
+    connect(workspace, &AruCoAPI::taskChanged, this, &MainWindow::updateCurrentTask);
+    connect(workspace, &AruCoAPI::distanceCalculated, this, &MainWindow::updateDistancesList);
+    connect(workspace, &AruCoAPI::centerFound, this, &MainWindow::updateCenterList);
 }
 
 void MainWindow::showCameraInfo()
@@ -95,9 +95,8 @@ void MainWindow::updateDistancesList(const QVector<QPair<int, double>> &markers)
     listModel->clear();
 
     for (const auto &marker : markers) {
-        QString text = QString("ID: %1, Расстояние: %2 mm")
-                           .arg(marker.first)
-                           .arg((float) marker.second * 100);
+        QString text
+            = QString("ID: %1, Расстояние: %2 mm").arg(marker.first).arg((float) marker.second);
         QStandardItem *item = new QStandardItem(text);
         listModel->appendRow(item);
     }
@@ -106,7 +105,7 @@ void MainWindow::updateDistancesList(const QVector<QPair<int, double>> &markers)
 void MainWindow::updateCenterList(double distance)
 {
     listModel->clear();
-    QString text = QString("Расстояние до центра: %1 mm").arg(distance * 100.0);
+    QString text = QString("Расстояние до центра: %1 mm").arg(distance);
     QStandardItem *item = new QStandardItem(text);
     listModel->appendRow(item);
 }

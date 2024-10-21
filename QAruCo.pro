@@ -9,43 +9,35 @@ CONFIG += c++17
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
-    capturethread.cpp \
     main.cpp \
-    mainwindow.cpp \
-    workspace.cpp \
-    yamlhandler.cpp
+    mainwindow.cpp
 
 HEADERS += \
-    capturethread.h \
-    mainwindow.h \
-    workspace.h \
-    yamlhandler.h
+    mainwindow.h
 
 FORMS += \
     mainwindow.ui
 
-# Specify the OpenCV version you are using
-OPENCV_VERSION = 490
+RESOURCES += \
+    res.qrc
 
-# Specify the path to the OpenCV include directory
-INCLUDEPATH += C:/lib/install/opencv/include
+# OPENCV
+win32:CONFIG(release, debug|release): LIBS += -L$$PWD/third_party/opencv_mingw810/x64/mingw/lib/ -llibopencv_world4100
+else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/third_party/opencv_mingw810/x64/mingw/lib/ -llibopencv_world4100d
+else:unix: LIBS += -L$$PWD/third_party/opencv_mingw810/x64/mingw/lib/ -llibopencv_world4100.dll
 
-# Specify the path to the OpenCV library directory
-LIBS += -LC:/lib/install/opencv/x64/vc17/lib
+INCLUDEPATH += $$PWD/third_party/opencv_mingw810/include
+DEPENDPATH += $$PWD/third_party/opencv_mingw810/include
 
-# Link the correct version of the opencv_world library depending on the build configuration
-CONFIG(debug, debug|release) {
-    # Debug configuration
-    LIBS += -lopencv_world$$OPENCV_VERSION"d"
-} else {
-    # Release configuration
-    LIBS += -lopencv_world$$OPENCV_VERSION
-}
+# AruCoAPI
+win32:CONFIG(release, debug|release): LIBS += -L$$PWD/third_party/AruCoAPI/ -lAruCoAPI
+else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/third_party/OpenCVLibrary/ -lAruCoAPId
+else:unix: LIBS += -L$$PWD/third_party/MySharedLib/ -lAruCoAPI
+
+INCLUDEPATH += $$PWD/third_party/AruCoAPI/include
+DEPENDPATH += $$PWD/third_party/AruCoAPI/include
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
-
-RESOURCES += \
-    res.qrc
