@@ -8,7 +8,7 @@ MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
     , workspace(new AruCoAPI(this))
-    , listModel(new QStandardItemModel(this))
+    , markerListModel(new QStandardItemModel(this))
 {
     ui->setupUi(this);
     initUI();
@@ -37,7 +37,7 @@ void MainWindow::initUI()
     currentTaskLabel->setText(tr("Нет задачи"));
 
     // Список меток
-    ui->markersList->setModel(listModel);
+    ui->markersList->setModel(markerListModel);
 
     // connection from GUI
     connect(ui->cameraInfoAction, &QAction::triggered, this, &MainWindow::showCameraInfo);
@@ -61,6 +61,7 @@ void MainWindow::initUI()
     connect(workspace, &AruCoAPI::taskChanged, this, &MainWindow::updateCurrentTask);
     connect(workspace, &AruCoAPI::distanceCalculated, this, &MainWindow::updateDistancesList);
     connect(workspace, &AruCoAPI::centerFound, this, &MainWindow::updateCenterList);
+    connect(workspace, &AruCoAPI::newConfiguration, this, &MainWindow::updateConfigurationList);
 }
 
 void MainWindow::showCameraInfo()
@@ -92,27 +93,35 @@ void MainWindow::updateFrame(const cv::Mat &frame)
 
 void MainWindow::updateDistancesList(const QVector<QPair<int, double>> &markers)
 {
-    listModel->clear();
+    markerListModel->clear();
 
     for (const auto &marker : markers) {
         QString text
             = QString("ID: %1, Расстояние: %2 mm").arg(marker.first).arg((float) marker.second);
         QStandardItem *item = new QStandardItem(text);
-        listModel->appendRow(item);
+        markerListModel->appendRow(item);
     }
 }
 
 void MainWindow::updateCenterList(double distance)
 {
-    listModel->clear();
+    markerListModel->clear();
     QString text = QString("Расстояние до центра: %1 mm").arg(distance);
     QStandardItem *item = new QStandardItem(text);
-    listModel->appendRow(item);
+    markerListModel->appendRow(item);
+}
+
+void MainWindow::updateConfigurationList(const Configuration &config)
+{
+    ui->configurationIdValue->setText(QString::fromStdString(config.id));
+    ui->configurationDateValue->setText(QString::fromStdString(config.date));
+    ui->configurationTypeValue->setText(QString::fromStdString(config.type));
+    ui->configurationNameValue->setText(QString::fromStdString(config.name));
 }
 
 void MainWindow::updateCurrentTask(const QString &newTask)
 {
-    listModel->clear();
+    markerListModel->clear();
     currentTaskLabel->clear();
     currentTaskLabel->setText(newTask);
 }

@@ -39,7 +39,9 @@ private:
     cv::Mat currentFrame;
     QMutex *dataLock;
     CaptureThread *capturer;
-    QStandardItemModel *listModel;
+
+    // GUI
+    QStandardItemModel *markerListModel;
 
 private:
     void initUI();
@@ -53,6 +55,7 @@ private slots:
     void updateFrame(const cv::Mat &frame);
     void updateDistancesList(const QVector<QPair<int, double>> &markers);
     void updateCenterList(double distance);
+    void updateConfigurationList(const Configuration &config);
     void updateCurrentTask(const QString &newTask);
 };
 #endif // MAINWINDOW_H
