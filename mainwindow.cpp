@@ -7,7 +7,8 @@
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
-    , workspace(new AruCoAPI(this))
+    , pixmapItem(new QGraphicsPixmapItem())
+    , arucoHandler(new AruCoAPI(this))
     , markerListModel(new QStandardItemModel(this))
 {
     ui->setupUi(this);
@@ -23,100 +24,63 @@ void MainWindow::initUI()
 {
     this->resize(1000, 800);
 
-    // Фид камеры
+    // Camera feed
     scene = new QGraphicsScene(this);
     view = new QGraphicsView(scene);
+    scene->addItem(pixmapItem);
     ui->cameraLayout->addWidget(view);
 
-    // Статус бар
+    // Status bar
     mainStatusLabel = new QLabel(ui->statusbar);
     ui->statusbar->addPermanentWidget(mainStatusLabel);
     currentTaskLabel = new QLabel(ui->statusbar);
     ui->statusbar->addPermanentWidget(currentTaskLabel);
-    mainStatusLabel->setText(tr("QAruCo готов к работе"));
-    currentTaskLabel->setText(tr("Нет задачи"));
+    mainStatusLabel->setText(tr("QAruCo ready"));
+    currentTaskLabel->setText(tr("No task"));
 
-    // Список меток
+    // Information Panel
     ui->markersList->setModel(markerListModel);
 
     // connection from GUI
     connect(ui->cameraInfoAction, &QAction::triggered, this, &MainWindow::showCameraInfo);
-    connect(ui->openCameraAction, &QAction::triggered, this, &MainWindow::openCamera);
     connect(ui->exitAction, &QAction::triggered, this, &MainWindow::close);
     connect(
-        ui->detectMarkersAction,
-        &QAction::triggered,
-        workspace,
-        &AruCoAPI::startMarkerDetectionTask);
-    connect(
-        ui->calculateDistanceAction,
-        &QAction::triggered,
-        workspace,
-        &AruCoAPI::startDistanceCalculationTask);
-    connect(ui->findCenterAction, &QAction::triggered, workspace, &AruCoAPI::startCenterFindingTask);
-    connect(ui->cancelOperationsAction, &QAction::triggered, workspace, &AruCoAPI::cancelOperations);
+        ui->detectBlocksAction, &QAction::triggered, this, &MainWindow::onDetectBlocksStateChanged);
 
     // connections to GUI
-    connect(workspace, &AruCoAPI::frameReady, this, &MainWindow::updateFrame);
-    connect(workspace, &AruCoAPI::taskChanged, this, &MainWindow::updateCurrentTask);
-    connect(workspace, &AruCoAPI::distanceCalculated, this, &MainWindow::updateDistancesList);
-    connect(workspace, &AruCoAPI::centerFound, this, &MainWindow::updateCenterList);
-    connect(workspace, &AruCoAPI::newConfiguration, this, &MainWindow::updateConfigurationList);
+    connect(arucoHandler, &AruCoAPI::taskChanged, this, &MainWindow::updateCurrentTask);
+    connect(arucoHandler, &AruCoAPI::frameCaptured, this, &MainWindow::updateFrame);
+    connect(arucoHandler, &AruCoAPI::blockDetected, this, &MainWindow::onBlockDetected);
 }
 
 void MainWindow::showCameraInfo()
 {
     QList<QCameraInfo> cameras = QCameraInfo::availableCameras();
-    QString info = tr("Доступные камеры: \n");
+    QString info = tr("Avaliable cameras: \n");
 
     foreach (const QCameraInfo &cameraInfo, cameras) {
-        info += "  - " + cameraInfo.deviceName() + ": ";
+        info += " - " + cameraInfo.deviceName() + ": ";
         info += cameraInfo.description() + "\n";
     }
-    QMessageBox::information(this, "Список камер", info);
+    QMessageBox::information(this, "Cameras info", info);
 }
 
-void MainWindow::openCamera()
-{
-    workspace->init();
-}
-
-void MainWindow::updateFrame(const cv::Mat &frame)
-{
-    cv::Mat frameCopy = frame.clone();
-    QImage img(frameCopy.data, frameCopy.cols, frameCopy.rows, frameCopy.step, QImage::Format_RGB888);
-    QGraphicsPixmapItem *item = new QGraphicsPixmapItem(QPixmap::fromImage(img.rgbSwapped()));
-    scene->clear();
-    scene->addItem(item);
-    view->fitInView(item, Qt::KeepAspectRatio);
-}
-
-void MainWindow::updateDistancesList(const QVector<QPair<int, double>> &markers)
+void MainWindow::onDetectBlocksStateChanged(bool state)
 {
     markerListModel->clear();
+    pixmapItem->setPixmap({});
+    ui->configurationIdValue->setText("");
+    ui->configurationDateValue->setText("");
+    ui->configurationTypeValue->setText("");
+    ui->configurationNameValue->setText("");
 
-    for (const auto &marker : markers) {
-        QString text
-            = QString("ID: %1, Расстояние: %2 mm").arg(marker.first).arg((float) marker.second);
-        QStandardItem *item = new QStandardItem(text);
-        markerListModel->appendRow(item);
-    }
+    arucoHandler->detectMarkerBlocks(state);
 }
 
-void MainWindow::updateCenterList(double distance)
+void MainWindow::updateFrame(const QPixmap &frame)
 {
-    markerListModel->clear();
-    QString text = QString("Расстояние до центра: %1 mm").arg(distance);
-    QStandardItem *item = new QStandardItem(text);
-    markerListModel->appendRow(item);
-}
-
-void MainWindow::updateConfigurationList(const Configuration &config)
-{
-    ui->configurationIdValue->setText(QString::fromStdString(config.id));
-    ui->configurationDateValue->setText(QString::fromStdString(config.date));
-    ui->configurationTypeValue->setText(QString::fromStdString(config.type));
-    ui->configurationNameValue->setText(QString::fromStdString(config.name));
+    pixmapItem->setPixmap(frame);
+    view->update();
 }
 
 void MainWindow::updateCurrentTask(const QString &newTask)
@@ -124,4 +88,27 @@ void MainWindow::updateCurrentTask(const QString &newTask)
     markerListModel->clear();
     currentTaskLabel->clear();
     currentTaskLabel->setText(newTask);
+}
+
+void MainWindow::onBlockDetected(const MarkerBlock &block)
+{
+    markerListModel->clear();
+    QString text;
+
+    text = QString("Coordinates: %1; %2").arg(block.blockCenter.x()).arg(block.blockCenter.y());
+    item = new QStandardItem(text);
+    markerListModel->appendRow(item);
+
+    text = QString("Distance: %1").arg(block.distanceToCenter);
+    item = new QStandardItem(text);
+    markerListModel->appendRow(item);
+
+    text = QString("Angle: %1").arg(block.blockAngle);
+    item = new QStandardItem(text);
+    markerListModel->appendRow(item);
+
+    ui->configurationIdValue->setText(QString::fromStdString(block.config.id));
+    ui->configurationDateValue->setText(QString::fromStdString(block.config.date));
+    ui->configurationTypeValue->setText(QString::fromStdString(block.config.type));
+    ui->configurationNameValue->setText(QString::fromStdString(block.config.name));
 }

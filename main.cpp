@@ -8,6 +8,7 @@ int main(int argc, char *argv[])
     qRegisterMetaType<QVector<QPair<int, double>>>("QVector<QPair<int,double>>");
     qRegisterMetaType<Configuration>("Configuration");
     qRegisterMetaType<cv::Mat>("cv::Mat");
+    qRegisterMetaType<MarkerBlock>("MarkerBlock");
     MainWindow w;
     w.show();
     return a.exec();

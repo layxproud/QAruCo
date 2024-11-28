@@ -25,11 +25,12 @@ public:
 
 private:
     Ui::MainWindow *ui;
-    AruCoAPI *workspace;
+    AruCoAPI *arucoHandler;
 
     // View area
     QGraphicsScene *scene;
     QGraphicsView *view;
+    QGraphicsPixmapItem *pixmapItem;
 
     // Status bar
     QLabel *mainStatusLabel;
@@ -40,8 +41,9 @@ private:
     QMutex *dataLock;
     CaptureThread *capturer;
 
-    // GUI
+    // Block Info
     QStandardItemModel *markerListModel;
+    QStandardItem *item;
 
 private:
     void initUI();
@@ -49,13 +51,11 @@ private:
 private slots:
     // Actions
     void showCameraInfo();
-    void openCamera();
+    void onDetectBlocksStateChanged(bool state);
 
     // GUI
-    void updateFrame(const cv::Mat &frame);
-    void updateDistancesList(const QVector<QPair<int, double>> &markers);
-    void updateCenterList(double distance);
-    void updateConfigurationList(const Configuration &config);
+    void updateFrame(const QPixmap &frame);
     void updateCurrentTask(const QString &newTask);
+    void onBlockDetected(const MarkerBlock &block);
 };
 #endif // MAINWINDOW_H
