@@ -22,17 +22,16 @@ RESOURCES += \
     res.qrc
 
 # OPENCV
-win32:CONFIG(release, debug|release): LIBS += -L$$PWD/third_party/opencv_mingw810/x64/mingw/lib/ -llibopencv_world4100
-else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/third_party/opencv_mingw810/x64/mingw/lib/ -llibopencv_world4100d
-else:unix: LIBS += -L$$PWD/third_party/opencv_mingw810/x64/mingw/lib/ -llibopencv_world4100.dll
+win32:CONFIG(release, debug|release): LIBS += -L$$PWD/third_party/opencv490_mingw810/x64/mingw/bin/ -llibopencv_world490
+else:unix: LIBS += -L$$PWD/third_party/opencv490_mingw810/x64/mingw/lib/ -llibopencv_world490.dll
 
-INCLUDEPATH += $$PWD/third_party/opencv_mingw810/include
-DEPENDPATH += $$PWD/third_party/opencv_mingw810/include
+INCLUDEPATH += $$PWD/third_party/opencv490_mingw810/include
+DEPENDPATH += $$PWD/third_party/opencv490_mingw810/include
 
 # AruCoAPI
 win32:CONFIG(release, debug|release): LIBS += -L$$PWD/third_party/AruCoAPI/ -lAruCoAPI
-else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/third_party/OpenCVLibrary/ -lAruCoAPId
-else:unix: LIBS += -L$$PWD/third_party/MySharedLib/ -lAruCoAPI
+else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/third_party/AruCoAPI/ -lAruCoAPId
+else:unix: LIBS += -L$$PWD/third_party/AruCoAPI/ -lAruCoAPI
 
 INCLUDEPATH += $$PWD/third_party/AruCoAPI/include
 DEPENDPATH += $$PWD/third_party/AruCoAPI/include

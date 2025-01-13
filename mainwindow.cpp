@@ -49,7 +49,7 @@ void MainWindow::initUI()
 
     // connections to GUI
     connect(arucoHandler, &AruCoAPI::taskChanged, this, &MainWindow::updateCurrentTask);
-    connect(arucoHandler, &AruCoAPI::frameCaptured, this, &MainWindow::updateFrame);
+    connect(arucoHandler, &AruCoAPI::frameReady, this, &MainWindow::updateFrame);
     connect(arucoHandler, &AruCoAPI::blockDetected, this, &MainWindow::onBlockDetected);
 }
 
@@ -77,9 +77,11 @@ void MainWindow::onDetectBlocksStateChanged(bool state)
     arucoHandler->detectMarkerBlocks(state);
 }
 
-void MainWindow::updateFrame(const QPixmap &frame)
+void MainWindow::updateFrame(const cv::Mat &frame)
 {
-    pixmapItem->setPixmap(frame);
+    QImage img(frame.data, frame.cols, frame.rows, frame.step, QImage::Format_RGB888);
+    QPixmap pixmap = QPixmap::fromImage(img.rgbSwapped());
+    pixmapItem->setPixmap(pixmap);
     view->update();
 }
 

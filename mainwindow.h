@@ -36,11 +36,6 @@ private:
     QLabel *mainStatusLabel;
     QLabel *currentTaskLabel;
 
-    // Video capturing
-    cv::Mat currentFrame;
-    QMutex *dataLock;
-    CaptureThread *capturer;
-
     // Block Info
     QStandardItemModel *markerListModel;
     QStandardItem *item;
@@ -54,7 +49,7 @@ private slots:
     void onDetectBlocksStateChanged(bool state);
 
     // GUI
-    void updateFrame(const QPixmap &frame);
+    void updateFrame(const cv::Mat &frame);
     void updateCurrentTask(const QString &newTask);
     void onBlockDetected(const MarkerBlock &block);
 };
