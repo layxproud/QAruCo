@@ -49,8 +49,9 @@ private slots:
     void onDetectBlocksStateChanged(bool state);
 
     // GUI
-    void updateFrame(const cv::Mat &frame);
+    void updateFrame(const QPixmap &frame);
     void updateCurrentTask(const QString &newTask);
     void onBlockDetected(const MarkerBlock &block);
+    void onTaskFinished(bool status, const QString &message);
 };
 #endif // MAINWINDOW_H

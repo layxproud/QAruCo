@@ -7,8 +7,8 @@
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
-    , pixmapItem(new QGraphicsPixmapItem())
     , arucoHandler(new AruCoAPI(this))
+    , pixmapItem(new QGraphicsPixmapItem())
     , markerListModel(new QStandardItemModel(this))
 {
     ui->setupUi(this);
@@ -51,6 +51,7 @@ void MainWindow::initUI()
     connect(arucoHandler, &AruCoAPI::taskChanged, this, &MainWindow::updateCurrentTask);
     connect(arucoHandler, &AruCoAPI::frameReady, this, &MainWindow::updateFrame);
     connect(arucoHandler, &AruCoAPI::blockDetected, this, &MainWindow::onBlockDetected);
+    connect(arucoHandler, &AruCoAPI::taskFinished, this, &MainWindow::onTaskFinished);
 }
 
 void MainWindow::showCameraInfo()
@@ -77,11 +78,9 @@ void MainWindow::onDetectBlocksStateChanged(bool state)
     arucoHandler->detectMarkerBlocks(state);
 }
 
-void MainWindow::updateFrame(const cv::Mat &frame)
+void MainWindow::updateFrame(const QPixmap &frame)
 {
-    QImage img(frame.data, frame.cols, frame.rows, frame.step, QImage::Format_RGB888);
-    QPixmap pixmap = QPixmap::fromImage(img.rgbSwapped());
-    pixmapItem->setPixmap(pixmap);
+    pixmapItem->setPixmap(frame);
     view->update();
 }
 
@@ -113,4 +112,13 @@ void MainWindow::onBlockDetected(const MarkerBlock &block)
     ui->configurationDateValue->setText(QString::fromStdString(block.config.date));
     ui->configurationTypeValue->setText(QString::fromStdString(block.config.type));
     ui->configurationNameValue->setText(QString::fromStdString(block.config.name));
+}
+
+void MainWindow::onTaskFinished(bool status, const QString &message)
+{
+    if (status) {
+        QMessageBox::information(this, tr("Success"), message);
+    } else {
+        QMessageBox::warning(this, tr("Error"), message);
+    }
 }
