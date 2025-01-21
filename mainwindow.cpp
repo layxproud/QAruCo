@@ -93,6 +93,7 @@ void MainWindow::updateCurrentTask(const QString &newTask)
 
 void MainWindow::onBlockDetected(const MarkerBlock &block)
 {
+    qDebug() << "Coordinates: " << block.blockCenter.x() << " " << block.blockCenter.y();
     markerListModel->clear();
     QString text;
 
